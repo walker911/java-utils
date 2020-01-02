@@ -16,7 +16,7 @@ import java.util.Date;
  * @author mu qin
  * @date 2019/12/27
  */
-public class DataUtils {
+public class DateUtils {
     public static void main(String[] args) {
         // Instant 当前时刻
         Instant now = Instant.ofEpochMilli(System.currentTimeMillis());

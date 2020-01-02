@@ -2,85 +2,80 @@ package com.walker.utils;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
-import java.util.Locale;
 
 /**
- * java 8
+ * java 8 日期
  *
  * @author walker
  * @date 2019/3/27
  */
 public class Date8Util {
 
+
+    private static final String NORMAL_DATE_PATTERN = "yyyy-MM-dd";
+    private static final String PURE_YEAR_MONTH_PATTERN = "yyyyMM";
+
+    private Date8Util() {
+    }
+
     /**
-     * 获取当天日期
+     * Date to LocalDate
      *
-     * @return
+     * @param date 日期
+     * @return LocalDate
      */
-    public static LocalDate today() {
-        return LocalDate.now();
+    public static LocalDate toLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
-    public static int year(LocalDate date) {
-        return date.getYear();
+    /**
+     * Date to LocalDateTime
+     *
+     * @param date 日期
+     * @return LocalDateTime
+     */
+    public static LocalDateTime toLocalDateTime(Date date) {
+        return date.toInstant().atZone(ZoneId.of("GMT+8")).toLocalDateTime();
     }
 
-    public static int month(LocalDate date) {
-        return date.getMonthValue();
+    /**
+     * LocalDate to Date
+     *
+     * @param date LocalDate
+     * @return Date
+     */
+    public static Date toDate(LocalDate date) {
+        return Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
-    public static int day(LocalDate date) {
-        return date.getDayOfMonth();
+    /**
+     * LocalDateTime to Date
+     *
+     * @param dateTime LocalDateTime
+     * @return Date
+     */
+    public static Date toDate(LocalDateTime dateTime) {
+        return Date.from(dateTime.atZone(ZoneId.of("GMT+8")).toInstant());
     }
 
-    public static LocalDate setDate(int year, int month, int day) {
-        return LocalDate.of(year, month, day);
-    }
-
-    public static boolean compare(LocalDate date1, LocalDate date2) {
-        return date1.equals(date2);
-    }
-
-    public static LocalTime time() {
-        return LocalTime.now();
-    }
-
-    public static LocalTime addHour(LocalTime time, int hour) {
-        return time.plusHours(hour);
-    }
-
-    public static LocalDate addWeek(LocalDate date, int week) {
-        return date.plus(week, ChronoUnit.WEEKS);
-    }
-
-    public static LocalDate dateToLocalDate(Date date) {
-        Instant instant = date.toInstant();
-        return instant.atZone(ZoneId.systemDefault()).toLocalDate();
-    }
-
-    public static LocalDateTime dateToLocalDateTime(Date date) {
-        Instant instant = date.toInstant();
-        return instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
-    }
-
-    public static Date localDateToDate(LocalDate date) {
-        ZoneId zoneId = ZoneId.systemDefault();
-        ZonedDateTime zonedDateTime = date.atStartOfDay(zoneId);
-        return Date.from(zonedDateTime.toInstant());
-    }
-
-    public static Date localDateTimeToDate(LocalDateTime dateTime) {
-        ZonedDateTime zonedDateTime = dateTime.atZone(ZoneId.systemDefault());
-        return Date.from(zonedDateTime.toInstant());
-    }
-
+    /**
+     * Date to Instant
+     *
+     * @param date 日期
+     * @return Instant
+     */
     public static Instant toInstant(Date date) {
         return Instant.ofEpochMilli(date.getTime());
     }
 
+    /**
+     * Instant to Date
+     *
+     * @param instant 时刻
+     * @return 日期
+     */
     public static Date toDate(Instant instant) {
         return new Date(instant.toEpochMilli());
     }
@@ -91,12 +86,12 @@ public class Date8Util {
 
     public static String format(Date date, String pattern) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-        return formatter.format(dateToLocalDateTime(date));
+        return formatter.format(toLocalDateTime(date));
     }
 
     public static Date parse(String date, String pattern) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-        return localDateTimeToDate(LocalDateTime.parse(date, formatter));
+        return toDate(LocalDateTime.parse(date, formatter));
     }
 
     /**
@@ -105,19 +100,24 @@ public class Date8Util {
      * @param date
      * @return
      */
-    public static long getStartTimeOfDay(LocalDate date) {
-        LocalDateTime startDateTime = LocalDateTime.of(date, LocalTime.MIN);
-        return startDateTime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+    public static long startTimestampOfDay(LocalDate date) {
+        LocalDateTime startTime = LocalDateTime.of(date, LocalTime.MIN);
+        return startTime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
     }
 
-    public static Date getStartDateOfDay(LocalDate date) {
+    public static long endTimestampOfDay(LocalDate date) {
+        return LocalDateTime.of(date, LocalTime.MAX).toInstant(ZoneOffset.of("+8")).toEpochMilli();
+    }
+
+    public static Date startDateOfDay(LocalDate date) {
         LocalDateTime startDateTime = LocalDateTime.of(date, LocalTime.MIN);
         ZonedDateTime zonedDateTime = startDateTime.atZone(ZoneId.systemDefault());
         return Date.from(zonedDateTime.toInstant());
     }
 
-    private static final String NORMAL_DATE_PATTERN = "yyyy-MM-dd";
-    private static final String PURE_YEAR_MONTH_PATTERN = "yyyyMM";
+    public static Date endDateOfDay(LocalDate date) {
+        return Date.from(LocalDateTime.of(date, LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant());
+    }
 
     /**
      * 当月第一天
@@ -150,31 +150,5 @@ public class Date8Util {
     }
 
     public static void main(String[] args) {
-        String dayAfter = "20190328";
-        LocalDate format = LocalDate.parse(dayAfter, DateTimeFormatter.BASIC_ISO_DATE);
-        System.out.println(format.toString());
-        String goodFriday = "Jan 18 2014";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d yyyy", Locale.ENGLISH);
-        LocalDate holiday = LocalDate.parse(goodFriday, formatter);
-        System.out.println(holiday);
-        LocalDateTime today = LocalDateTime.now();
-        String formatTime = today.format(DateTimeFormatter.ofPattern("MM dd yyyy"));
-        System.out.println(formatTime);
-        System.out.println(dateToLocalDate(new Date()));
-        System.out.println(localDateToDate(LocalDate.now()));
-        System.out.println(dateToLocalDateTime(new Date()));
-        System.out.println(localDateTimeToDate(LocalDateTime.now()));
-        YearMonth yearMonth = YearMonth.now();
-        System.out.printf("yearMonth: %s day: %d\n", yearMonth, yearMonth.lengthOfMonth());
-        System.out.println(Clock.systemUTC().millis());
-        System.out.println(Clock.systemDefaultZone().getZone());
-        System.out.println(format(new Date(), "yyyy-MM-dd HH:mm:ss"));
-        System.out.println(parse("2019-05-20 15:51:24", "yyyy-MM-dd HH:mm:ss"));
-        LocalDateTime lastAtTomorrow1 = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.MAX);
-        System.out.println(lastAtTomorrow1);
-        LocalDateTime lastAtTomorrow2 = LocalTime.MAX.atDate(LocalDate.now().plusDays(1));
-        System.out.println(lastAtTomorrow2);
-        LocalDateTime lastDayAtMonth = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
-        System.out.println(lastDayAtMonth);
     }
 }
