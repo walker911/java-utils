@@ -149,6 +149,16 @@ public class Date8Util {
         return DateTimeFormatter.ofPattern(PURE_YEAR_MONTH_PATTERN).format(date);
     }
 
+    public static boolean isMatch(LocalDate date) {
+        LocalDate now = LocalDate.now();
+
+        MonthDay birthday = MonthDay.of(date.getMonth(), date.getDayOfMonth());
+        MonthDay currentMonthDay = MonthDay.from(now);
+
+        return currentMonthDay.equals(birthday);
+    }
+
+
     public static void main(String[] args) {
     }
 }
